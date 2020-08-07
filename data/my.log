@@ -1,0 +1,10 @@
+nohup: 忽略输入
+trunct table done!
+handle2oracle done!
+/home/psdz/yeyi/DADI_PEIJIAN_PRICE_bendi_ceshi_fenjigou_model/sql_oracle.py:205: SettingWithCopyWarning: 
+A value is trying to be set on a copy of a slice from a DataFrame
+
+See the caveats in the documentation: http://pandas.pydata.org/pandas-docs/stable/indexing.html#indexing-view-versus-copy
+  df.dropna(subset=['OPERATETIMEFORHIS'], axis=0, how='any', inplace=True)
+changfang price done!
+statistics done!

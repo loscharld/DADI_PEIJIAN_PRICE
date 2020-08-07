@@ -1,0 +1,422 @@
+1、系统检查
+验证系统是否具有支持CUDA的GPU
+lspci | grep -i nvidia
+输出
+04:00.0 VGA compatible controller: NVIDIA Corporation GP104 [GeForce GTX 1080] (rev a1)
+04:00.1 Audio device: NVIDIA Corporation GP104 High Definition Audio Controller (rev a1)
+服务器上的显卡是GTX 1080，支持CUDA
+
+确认系统是受支持的Linux发行版本
+CUDA开发工具仅在某些特定的Linux发行版上受支持，运行命令
+uname -m && cat /etc/*release
+输出信息
+x86_64
+CentOS Linux release 7.7.1908 (Core)
+NAME="CentOS Linux"
+VERSION="7 (Core)"
+ID="centos"
+ID_LIKE="rhel fedora"
+VERSION_ID="7"
+PRETTY_NAME="CentOS Linux 7 (Core)"
+ANSI_COLOR="0;31"
+CPE_NAME="cpe:/o:centos:centos:7"
+HOME_URL="https://www.centos.org/"
+BUG_REPORT_URL="https://bugs.centos.org/"
+CENTOS_MANTISBT_PROJECT="CentOS-7"
+CENTOS_MANTISBT_PROJECT_VERSION="7"
+REDHAT_SUPPORT_PRODUCT="centos"
+REDHAT_SUPPORT_PRODUCT_VERSION="7"
+CentOS Linux release 7.7.1908 (Core)
+CentOS Linux release 7.7.1908 (Core)
+x86_64表示当前系统是64位系统，运行的Linux发行版是CentOS7.7版本。
+
+验证系统是否有GCC编译环境
+gcc --version
+一般情况下都会有。
+如果没有 sudo yum install gcc
+
+验证系统是否安装了正确的内核头文件和开发包
+运行以下命令找到系统正在运行的内核版本：
+uname -r
+当前运行的内核的头文件和开发包可以通过以下方式安装：
+sudo yum install kernel-devel-$(uname -r) kernel-headers-$(uname -r)
+
+2、安装CUDA
+下载CUDA 10.0
+cd ~/NVIDIA/CUDA/cuda-10.0
+
+// 下载基础cuda10.0安装包
+wget -c https://developer.nvidia.com/compute/cuda/10.0/Prod/local_installers/cuda_10.0.130_410.48_linux -O cuda_10.0.130_410.48_linux.run
+
+// 下载cuda10.0的1个补丁
+wget -c http://developer.download.nvidia.com/compute/cuda/10.0/Prod/patches/1/cuda_10.0.130.1_linux.run
+sudo sh cuda_10.0.130_410.48_linux.run
+
+如果遇到文件权限问题，可以赋予CUDA文件可执行权限：
+
+sudo chmod a+x cuda_9.1.85_387.26_linux.run
+运行CUDA安装文件后，紧接着在屏幕上出现了很长的说明，按住空格键至进度100%，然后按照下面的提示操作即可，需要注意的是，在提示
+
+Install NVIDIA Accelerated Graphics Driver for Linux-x86_64 387.26?
+(y)es/(n)o/(q)uit: 
+意思是：**安装NVIDIA驱动吗？**选择n，NVIDIA驱动我们单独安装。
+
+安装过程中每一步的提示如下，请仔细阅读翻译，尤其是符号链接那部分：
+
+-----------------
+// 接受之前阅读的说明吗？必须接受啊
+Do you accept the previously read EULA?
+accept/decline/quit: accept
+
+// 安装NVIDIA驱动吗？NVIDIA驱动我们单独安装
+Install NVIDIA Accelerated Graphics Driver for Linux-x86_64 387.26?
+(y)es/(n)o/(q)uit: n
+
+// 安装CUDA9.1的工具集吗？安装
+Install the CUDA 9.1 Toolkit?
+(y)es/(n)o/(q)uit: y
+
+// CUDA的默认路径，按Enter键继续
+Enter Toolkit Location
+ [ default is /usr/local/cuda-9.1 ]: 
+ 
+// 要为CUDA9.1建立符号链接吗？如果该CUDA是你想默认的，输入y；
+// 如果不是但是以后想调用，输入n
+// 这个可以在安装之后修改
+Do you want to install a symbolic link at /usr/local/cuda?
+(y)es/(n)o/(q)uit:y
+
+// CUDA 9.1的示例，可以安装，方便测试
+Install the CUDA 9.1 Samples?
+(y)es/(n)o/(q)uit: y
+
+// CUDA 9.1的示例位置，默认即可，测试完成后可以删掉，按Enter键表示默认
+Enter CUDA Samples Location
+ [ default is /home/unix ]: 
+然后开始安装，终端上会显示
+
+Installing the CUDA Toolkit in /usr/local/cuda-9.1 ...
+表示CUDA 9.1会被安装到目录/usr/local/cuda-9.1文件夹下，大约1分钟左右，终端显示
+
+Installing the CUDA Samples in /home/unix ...
+Copying samples to /home/unix/NVIDIA_CUDA-9.1_Samples now...
+Finished copying samples.
+
+===========
+= Summary =
+===========
+
+Driver:   Not Selected
+Toolkit:  Installed in /usr/local/cuda-9.1
+Samples:  Installed in /home/unix
+
+Please make sure that
+ -   PATH includes /usr/local/cuda-9.1/bin
+ -   LD_LIBRARY_PATH includes /usr/local/cuda-9.1/lib64, or, add /usr/local/cuda-9.1/lib64 to /etc/ld.so.conf and run ldconfig as root
+
+To uninstall the CUDA Toolkit, run the uninstall script in /usr/local/cuda-9.1/bin
+
+Please see CUDA_Installation_Guide_Linux.pdf in /usr/local/cuda-9.1/doc/pdf for detailed information on setting up CUDA.
+
+***WARNING: Incomplete installation! This installation did not install the CUDA Driver. A driver of version at least 384.00 is required for CUDA 9.1 functionality to work.
+To install the driver using this installer, run the following command, replacing <CudaInstaller> with the name of this run file:
+    sudo <CudaInstaller>.run -silent -driver
+
+Logfile is /tmp/cuda_install_89370.log
+
+大部分CUDA版本都有补丁包，补丁的安装比较容易，以CUDA 9.1的补丁1cuda_9.1.85.1_linux.run为例说明
+
+sudo sh cuda_10.0.130.1_linux.run
+屏幕上也会出现很长的说明，按住空格键至进度100%，出现了一些选项
+
+-----------------
+Do you accept the previously read EULA?
+accept/decline/quit:  accept
+
+Enter CUDA Toolkit installation directory
+ [ default is /usr/local/cuda-9.1 ]: 
+安装位置默认就行，按住Enter后，秒安装
+
+Installation complete!
+Installation directory: /usr/local/cuda-9.1
+
+
+
+首先，查看cuda的bin目录下是否有nvcc：
+
+cd /usr/local/cuda/bin
+
+如果存在，直接将cuda路径加入系统路径即可：
+
+vim ~/.bashrc进入配置文件；
+添加以下两行：
+export PATH=/usr/local/cuda/bin:$PATH
+export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
+
+然后更新配置文件：
+source ~/.bashrc
+再次执行nvcc --version就可以看到相应cuda版本了，如下：
+Cuda compilation tools, release 9.0, V9.0.176
+
+
+
+
+3.安装CuDNN
+CuDNN是深度神经网络库，和CUDA搭配使用，专门用于深度学习任务
+从CuDNN仓库下载适配CUDA版本的安装包，注意认准CUDA10.0版本号（下载CuDNN前需要注册，推荐使用微信注册）
+在存放CuDNN包的路径下运行下列命令
+tar xzvf cudnn-10.0-linux-x64-v7.6.5.32.tgz
+sudo cp -P cuda/include/cudnn.h /usr/local/cuda/include
+sudo cp -P cuda/lib64/lib* /usr/local/cuda/lib64
+sudo chmod a+r /usr/local/cuda/include/cudnn.h
+sudo chmod a+r /usr/local/cuda/lib64/lib*
+sudo ldconfig
+
+3.安装NVIDA显卡驱动
+显卡驱动有一个安装原则：装最新的驱动。
+读者可以去NVIDA官网根据自己的显卡型号搜索合适的驱动，注意notebook是指笔记本，不是给台式机用的。
+点击搜索后会跳转到一个下载页面，右键复制这个下载路径
+在cenots的终端输入 wget 下载路径，就可以直接把驱动下到本地硬盘上
+输入 echo -e "blacklist nouveau\noptions nouveau modeset=0" > /etc/modprobe.d/blacklist.conf
+输入 lsmod | grep nouveau 如果没有输入任何内容，说明成功禁止了nouveau
+安装这个驱动，输入 ./NVIDIA-Linux-x86_64-440.59.run (读者根据自己下载的驱动名修改；根据提示安装）
+重启机器后输入 nvidia-smi，如果看到下面画面，说明已经成功安装
+
+#安装CMAKE
+gcc -v
+如果没有gcc
+则yum install gcc -y
+gcc版本升到5以上
+yum install gcc-c++
+wget https://github.com/Kitware/CMake/releases/download/v3.14.1/cmake-3.14.1.tar.gz
+tar xvf cmake-3.14.1.tar.gz && cd cmake-3.14.1/
+./bootstrap
+gmake
+gmake install
+/usr/local/bin/cmake --version
+移除原来的版本，如果没有可跳过
+ yum remove cmake -y
+ln -s /usr/local/bin/cmake /usr/bin/
+cmake --version
+
+4、安装Anaconda3
+在官方repo下载Anaconda安装包（.sh后缀名），如果下载速度过慢，访问国内镜像源下载，右键复制对应Anaconda包的链接，使用wget指令下载，注意下载时注意该Anaconda包是基于Python 3.6还是Python 3.7的，推荐Python 3.6，下载Anaconda3-5.2.0-Linux-x86_64.sh文件
+cd ~
+wget -c https://repo.anaconda.com/archive/Anaconda3-5.2.0-Linux-x86_64.sh
+Anaconda3-5.2.0-Linux-x86_64.sh这是 python3.6 版本的Anaconda安装包，继续运行
+bash Anaconda3-5.2.0-Linux-x86_64.sh
+按Enter键继续，出现Anaconda版本的一些说明，此时按一下space(空格)键，有如下提示，在[no] >>> 后面输入yes，如下所示：
+Do you accept the license terms? [yes|no]
+[no] >>> yes
+紧接着有提示
+Anaconda3 will now be installed into this location:
+/home/test/anaconda3
+  - Press ENTER to confirm the location
+  - Press CTRL-C to abort the installation
+  - Or specify a different location below
+[/home/test/anaconda3] >>>
+按下Enter键即可开始安装，安装完成后，提示如下
+
+installation finished.
+Do you wish the installer to prepend the Anaconda3 install location
+to PATH in your /home/test/.bashrc ? [yes|no]
+[no] >>> yes
+在[no] >>> 后面输入yes后出现Anaconda安装成功的消息，此时出现是否安装Microsoft VSCode的消息，输入no即可。
+python3.6版本的Anaconda安装完成，此时在终端输入conda，会提示conda:未找到命令，不要慌，反手输入
+source ~/.bashrc
+刷新环境，再输入conda即有消息提示，表明conda安装成功。
+
+5、安装xgboost  
+git clone --recursive https://github.com/dmlc/xgboost
+cd xgboost
+mkdir build 
+cd build 
+cmake .. -DUSE_CUDA=ON  
+make -j4
+cd python-package
+python setup.py install
+测试xgboost
+cd /xgboost/tests/benchmark
+python benchmark_tree.py --tree_method gpu_hist (Train Time: 5.56s)
+python benchmark_tree.py --tree_method hist     (Train Time: 53.5s)
+成功运行，说明gpu support完成
+在其他时候运行gpu的xgboost时，只需要添加
+{'tree_method':'gpu_hist'}
+
+
+
+6、安装tensorflow-gpu 2.0
+conda create -n tensorflow20-gpu pip python=3.6
+conda env list
+激活：source activate tensorflow20-gpu
+退出：source deactivate tensorflow20-gpu
+conda search cuda
+conda install cudatoolkit==10.0.130
+conda search cudnn
+conda install cudnn==7.3.1
+ls ~/anaconda3/envs/tensorflow20-gpu/lib/
+ls ~/anaconda3/envs/tensorflow20-gpu/lib/ | grep cuda
+ls ~/anaconda3/envs/tensorflow20-gpu/lib/ | grep cudnn
+ls ~/anaconda3/envs/tensorflow20-gpu/include/ | grep cudnn
+pip install tensorflow-gpu==2.0.0
+
+python
+>>> import tensorflow as tf
+>>> tf.test.is_gpu_available()
+若输出类似的内容，且最后一行为True，则表示tensorflow-gpu 2.0 版本安装成功！
+
+查看tensorflow的版本的命令为
+>>> import tensorflow as tf
+>>> tf.__version__
+注意，__为两个_组合而成。
+
+7、安装oracle数据库
+
+第一步 安装包上传：
+1.在centos7的home文件夹中建立文件夹oracle，执行命令mkdir oracle。
+2.将图1所示的两个文件上传至刚才所建立的oracle文件夹中。
+
+第二步 安装程序：
+1.进入安装文件所在目录，执行命令cd /home/oracle。
+2.执行安装语句：
+rpm -ivh oracle-instantclient11.2-basic-11.2.0.4.0-1.x86_64.rpm
+rpm -ivh oracle-instantclient11.2-sqlplus-11.2.0.4.0-1.x86_64.rpm
+(如果出现unknown option错误，请将 -ivh去除后手打)
+第三步 配置环境变量：
+（查看vim：rpm -qa |grep vim   包含（vim-filesystem-7.4.160-5.el7.x86_64
+vim-enhanced-7.4.160-5.el7.x86_64
+vim-minimal-7.4.160-2.el7.x86_64
+vim-common-7.4.160-5.el7.x86_64）
+缺少那个装那个，yum -y install vim-minimal
+yum -y install vim-enhanced
+）
+
+1.修改环境变量，执行命令vim /etc/profile打开文件。
+2.按下键盘上的i键开启插入模式。
+3.将光标移动到文件最后一行，按回车键新建一行。
+4.在新建的一行中输入以下内容(与上面内容多空一行)
+export ORACLE_HOME=/usr/lib/oracle/11.2/client64
+export ORACLE_BASE=/usr/lib/oracle/11.2
+export LD_LIBRARY_PATH=$ORACLE_HOME/lib:$LD_LIBRARY_PATH
+export NLS_LANG=AMERICAN_AMERICA.AL32UTF8
+5.按下键盘左上方的Esc键，退出插入模式。
+6.shift + :
+7.输入命令:wq
+8.按下回车键，保存并退出编辑模式。
+9.启动新设置好的环境变量文件，输入命令source /etc/profile，按回车键执行。
+第四步 配置tnsnames.ora文件：
+说明：这一步创建连接数据库的配置文件
+1.执行命令mkdir -p /usr/lib/oracle/11.2/client64/network/admin
+2.创建tnsnames.ora文件并插入内容，
+执行命令vim /usr/lib/oracle/11.2/client64/network/admin/tnsnames.ora
+3.按i键开启数据插入模式
+4.插入以下内容
+# tnsnames.ora Network Configuration File: /usr/lib/oracle/11.2/client64/network/admin/tnsnames.ora
+# Generated by Oracle configuration tools.
+
+lbora =
+  (DESCRIPTION =
+    (ADDRESS_LIST =
+      (ADDRESS = (PROTOCOL = TCP)(HOST =10.9.1.169)(PORT = 1521))
+    )       
+    (CONNECT_DATA =
+      (SERVICE_NAME = lbora)
+    )       
+  )
+-------------------注释------------
+        
+需要连接的数据库名称=
+  (DESCRIPTION =
+    (ADDRESS_LIST =
+      (ADDRESS = (PROTOCOL = TCP)(HOST =需要连接的数据库IP地址)(PORT = 1521))
+    )       
+    (CONNECT_DATA =
+      (SERVICE_NAME = 需要连接的数据库名称)   
+    )       
+  )
+ORCL =
+  (DESCRIPTION =
+    (ADDRESS_LIST =
+      (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 1521))
+    )       
+    (CONNECT_DATA =
+      (SERVICE_NAME = orcl)
+    )       
+  )        
+lbora169 =
+  (DESCRIPTION =
+    (ADDRESS_LIST =
+      (ADDRESS = (PROTOCOL = TCP)(HOST = 10.9.1.169)(PORT = 1521))
+    )       
+    (CONNECT_DATA =
+      (SERVICE_NAME = lbora)
+    )       
+  )
+需要连接的数据库名称：是目标数据库实例名称。
+需要连接的数据库IP地址：是目标数据库IP地址。
+5.按下键盘左上方的Esc键，退出插入模式。
+6.Shift + :
+7.输入命令:wq。
+8.按下回车键执行命令，保存并退出。
+第五步 验证：
+执行命令sqlplus64 /nolog
+
+
+9.
+chmod  -R 777 /home/psdz/yeyi
+cd /home/appuser/lihui/DADI_PEIJIAN_PRICE  
+nohup python all_start_run.py >> /home/psdz/yeyi/DADI_PEIJIAN_PRICE_bendi_ceshi_fenjigou_model/data/my.log 2>&1 &
+ps -ef |grep python
+
+参考网址：https://github.com/kangzhiheng/GitLocalDoc#tensorflow-160
+                https://www.cnblogs.com/learn-the-hard-way/p/12318980.html
+常用工具包安装
+1.虚拟机上传下载组件( 支持从windows直接拖拽文件，相当好用)
+yum -y install lrzsz  
+
+rz+文件名(上传)
+sz+文件名(下载)
+
+
+2.gcc (nginx之类由c语言开发的，编译的时候需要用到)
+yum -y install gcc-c++ 
+ 
+
+3.PCRE (Perl库，包括 perl 兼容的正则表达式库)
+yum -y install pcre pcre-devel 
+
+
+4.zlib (zlib库提供了很多种压缩和解压缩的方式)
+yum -y install zlib zlib-devel ruby
+ 
+
+5.openssl (OpenSSL 是一个强大的安全套接字层密码库，囊括主要的密码算法、常用的密钥和证书封装管理功能及SSL协议)
+yum -y install openssl openssl-devel patch
+
+
+6.安装wget下载工具
+yum -y install wget
+
+
+7.使用systemctl自动补全服务名称( 因为CentOS7的默认安装类型是最小安装，所以默认没有自动补全的功能)
+yum install -y bash-completion
+
+
+8.centos  64位系统兼容32位运行程序（aapt）
+yum install -y zlib.i686 libstdc++.i686
+ 
+ 
+9.安装lsof（list open files）是一个列出当前系统打开文件的工具
+yum install lsof -y
+
+ 
+10.zip unzip
+yum install -y unzip zip 
+
+11.vim
+yum install -y vim
+rpm -qa|grep vim
+出现如下的命令
+vim-minimal-7.4.160-1.el7.x86_64
+yum -y install vim*
+则，可以安装完vim相关工具了。
