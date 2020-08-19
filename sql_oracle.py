@@ -530,7 +530,7 @@ class Process(Extract):
         path6 = 'pp_yc/常用配件模型预测值验证.csv'
 
         df1 = pd.read_csv(path1)
-        df2 = pd.read_csv(open(path2, encoding='utf-8')).head(5000000)
+        df2 = pd.read_csv(open(path2, encoding='utf-8'))
         df3 = pd.read_csv(open(path3, encoding='utf-8'))
         df4 = pd.read_csv(open(path4, encoding='utf-8'))
         df4['METHOD']=2

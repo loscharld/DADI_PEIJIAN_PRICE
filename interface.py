@@ -21,7 +21,7 @@ with SimpleXMLRPCServer(("0.0.0.0", 5002),requestHandler=RequestHandler) as serv
             return 400
 
 
-    server.register_function(start_code, 'start_code3')
+    server.register_function(start_code, 'start_code')
     # server.register_instance(vn)
     print("server is start...........")
     # Run the server's main loop

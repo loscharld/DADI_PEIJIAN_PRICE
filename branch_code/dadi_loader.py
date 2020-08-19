@@ -399,7 +399,7 @@ def get_time_from_table_1year(end_time):
     # 得到今年的每个月的时间。today_year_months等于1 2 3 4 5 6 7 8 9，
     today_year_months = range(1, end_time.month + 1)
     # 得到去年的每个月的时间  last_year_months 等于10 11 12
-    last_year_months = range(end_time.month + 1, 13)
+    last_year_months = range(end_time.month, 13)
     # 定义列表去年的数据
     data_list_lasts = []
     # 通过for循环，得到去年的时间夹月份的列表
