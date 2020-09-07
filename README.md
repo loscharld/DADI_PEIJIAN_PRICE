@@ -27,6 +27,8 @@
 提供接口：nohup python interface.py >> /home/appuser/lihui/DADI_PEIJIAN_PRICE/data/my.log 2>&1 &
 客户端测试：client.py
 
+#项目整体流程框架图
+配件模型整体流程框架图.pdf
 
 
 # 总结
